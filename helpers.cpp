@@ -55,8 +55,6 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
 }
 
 /**
-	TODO - implement this function.
-
     Blurs (and normalizes) a grid of probabilities by spreading
     probability from each cell over a 3x3 "window" of cells. This
     function assumes a cyclic world where probability "spills
@@ -89,21 +87,61 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
 */
 vector < vector <float> > blur(vector < vector < float> > grid, float blurring) {
 
+	// Initialize grid size.
+	int height = grid.size();
+	int width = grid[0].size();
+
+	// Compute blur coefficients to apply to 3x3 window.
+	float center_prob = 1.0 - blurring; // Impacts center cell fully.
+	float adjacent_prob = blurring / 6.0; // Adjacent cells, less.
+	float corner_prob = blurring / 12.0; // Corner cells, even less.
+
+	// Represent 3x3 window grid, and place blur coefficients.
+	vector < vector <float> > window (3, vector<float> (3));
+	window[0][0] = corner_prob;
+	window[0][1] = adjacent_prob;
+	window[0][2] = corner_prob;
+	window[1][0] = adjacent_prob;
+	window[1][1] = center_prob;
+	window[1][2] = adjacent_prob;
+	window[2][0] = corner_prob;
+	window[2][1] = adjacent_prob;
+	window[2][2] = corner_prob;
+
+	// Create new grid of same size as main grid but filled with zeros.
 	vector < vector <float> > newGrid;
 
-	// your code here
+	for (int row = 0; row < height; row++) {
+		vector<float> newRow;
+		for (int col = 0; col < width; col++) {
+			newRow.push_back(0.0);
+		}
+		newGrid.push_back(newRow);
+	}
+
+	// Get coordinates of each cell one by one, and save cell value.
+	for (int row = 0; row < height; row++) {
+		for (int col = 0; col < width; col++) {
+			float grid_val = grid[row][col];
+			// Get offsets to traverse 3x3 grid centered on picked value.
+			for (int dx = -1; dx <= 1; dx++) {
+				for (int dy = -1; dy <= 1; dy++) {
+					// Get corresponding blur coefficient.
+					float mult = window[dx + 1][dy + 1];
+					// Apply offset to get corresponding coordinates in new grid.
+					// Since C++ vectors don't accept negative indices, here's how we can
+					// deal with modulus of negative indices: http://bit.ly/2LlO77i
+					int new_row = ((row + dy) % height + height) % height;
+					int new_col = ((col + dx) % width + width) % width;
+					// Increment new grid cell by value times blur coefficient.
+					newGrid[new_row][new_col] += mult * grid_val;
+				}
+			}
+		}
+	}
 
 	return normalize(newGrid);
 }
-
-/** -----------------------------------------------
-#
-#
-#	You do not need to modify any code below here.
-#
-#
-# ------------------------------------------------- */
-
 
 /**
     Determines when two grids of floating point numbers
