@@ -61,20 +61,18 @@ vector< vector <float> > initialize_beliefs(vector< vector <char> > grid) {
 }
 
 /**
-	TODO - implement this function
-
     Implements robot sensing by updating beliefs based on the
     color of a sensor measurement
 
-	@param color - the color the robot has sensed at its location
+		@param color - the color the robot has sensed at its location
 
-	@param grid - the current map of the world, stored as a grid
-		   (vector of vectors of chars) where each char represents a
-		   color. For example:
+		@param grid - the current map of the world, stored as a grid
+			   (vector of vectors of chars) where each char represents a
+			   color. For example:
 
-		   g g g
-    	   g r g
-    	   g g g
+			  	g g g
+	    	  g r g
+	    	  g g g
 
    	@param beliefs - a two dimensional grid of floats representing
    		   the robot's beliefs for each cell before sensing. For
@@ -103,13 +101,27 @@ vector< vector <float> > sense(char color,
 	float p_hit,
 	float p_miss)
 {
-	vector< vector <float> > newGrid;
+	// Build new beliefs grid by multiplying each cell by the hit or miss coefficient.
+	vector< vector <float> > newBeliefs;
 
-	// your code here
+	for (int row = 0; row < grid.size(); row++) {
+		vector<float> newRow;
+		for (int col = 0; col < grid[0].size(); col++) {
+			// If sensed color and world color match...
+			if (color == grid[row][col]) {
+				// ... it's a hit -- multiply accordingly.
+				newRow.push_back(beliefs[row][col] * p_hit);
+			}
+			else {
+				// ... it's a miss -- multiply accordingly.
+				newRow.push_back(beliefs[row][col] * p_miss);
+			}
+		}
+		newBeliefs.push_back(newRow);
+	}
 
-	return normalize(newGrid);
+	return normalize(newBeliefs);
 }
-
 
 /**
 		Implements robot motion by updating beliefs based on the
